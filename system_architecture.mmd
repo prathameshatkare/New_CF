@@ -1,0 +1,46 @@
+﻿flowchart TB
+    subgraph DataLayer[Data Layer]
+        D1[cystfibr.csv CF]
+        D2[nhanes_clean.csv Non-CF]
+    end
+
+    subgraph PrepLayer[Preprocessing and Augmentation]
+        P1[data_preprocessing_and_stat_validation.py to cleaned_cf_dataset.csv]
+        P2[data_augmentation_hybrid.py TVAE to augmented_cf_dataset.csv]
+    end
+
+    subgraph FL[Research Federated Training]
+        F0[federated_pytorch.py]
+        F1[Train Val Test split and StandardScaler]
+        F2[Non-IID Dirichlet partition 5 clients]
+        F3[Local client updates with FedProx]
+        F4[Server aggregation with Weighted FedAvg]
+        F5[Early stopping on validation AUC]
+        F6[best_federated_cf_model.pt with scaler and feature schema]
+    end
+
+    subgraph Eval[Evaluation and Reporting]
+        E1[federated_ablation_runner.py]
+        E2[model_comparison.py]
+        E3[plot_federated_ablation.py]
+    end
+
+    subgraph Deploy[Inference Deployment]
+        W1[web index and app.js]
+        W2[FastAPI api_server.py endpoints]
+        W3[ModelBundle loads checkpoint CFNet and scaler]
+        W4[Risk probability and label response]
+    end
+
+    D1 --> P1
+    D2 --> P1
+    P1 --> P2
+    P2 --> F0
+    F0 --> F1 --> F2 --> F3 --> F4 --> F5 --> F6
+    F6 --> E1
+    F6 --> E2
+    E1 --> E3
+    F6 --> W3
+    W1 --> W2
+    W2 --> W3
+    W3 --> W4

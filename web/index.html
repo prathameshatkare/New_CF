@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CF Edge Screening UI</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h1>CF Edge Screening Console</h1>
+        <p>Federated clinical screening interface for cystic fibrosis risk estimation.</p>
+      </div>
+      <div class="hero-meta">
+        <div id="health" class="chip">Checking model status...</div>
+        <div class="chip chip-soft">Edge Mode Active</div>
+      </div>
+    </section>
+
+    <nav class="tab-nav panel">
+      <button class="tab-btn active" data-tab="prediction">Prediction</button>
+      <button class="tab-btn" data-tab="cure">Cure &amp; Prevention</button>
+      <button class="tab-btn" data-tab="knowledge">CF Knowledge</button>
+      <button class="tab-btn" data-tab="research">Global Research</button>
+      <button class="tab-btn" data-tab="edge">Edge Deployment</button>
+      <button class="tab-btn" data-tab="nodes">Nodes Info</button>
+    </nav>
+
+    <section id="tab-prediction" class="tab-content active">
+      <section class="grid">
+        <form id="predict-form" class="panel">
+          <h2>Patient Inputs</h2>
+
+          <label>Age
+            <input type="number" id="age" min="0" max="120" value="18" step="1" required />
+          </label>
+
+          <label>Sex
+            <select id="sex">
+              <option value="Female">Female</option>
+              <option value="Male">Male</option>
+            </select>
+          </label>
+
+          <label>Height (cm)
+            <input type="number" id="height" min="40" max="250" value="165" step="0.1" required />
+          </label>
+
+          <label>Weight (kg)
+            <input type="number" id="weight" min="5" max="300" value="60" step="0.1" required />
+          </label>
+
+          <label>FEV1 Input Mode
+            <select id="fev1-mode">
+              <option value="liters">Direct FEV1 (L)</option>
+              <option value="ml">Direct FEV1 (mL)</option>
+              <option value="percent">From % predicted + predicted FEV1 (L)</option>
+            </select>
+          </label>
+
+          <div id="fev1-fields"></div>
+
+          <label class="row">
+            <input type="checkbox" id="auto-bmi" checked />
+            Auto-compute BMI from height/weight
+          </label>
+
+          <label id="bmi-manual-wrap" class="hidden">BMI (manual)
+            <input type="number" id="bmi-manual" min="5" max="90" step="0.1" value="22.0" />
+          </label>
+
+          <button type="submit" class="btn">Predict CF Risk</button>
+        </form>
+
+        <section class="panel">
+          <h2>Risk Analytics</h2>
+          <div id="react-root"></div>
+          <h3 class="sub">Clinical Note</h3>
+          <ul>
+            <li>FEV1 is measured using a spirometry test (hospital, lab, or clinic).</li>
+            <li>In reports, FEV1 may appear as liters (L), mL, or % predicted with a predicted/reference value.</li>
+            <li>If your report gives % predicted, compute: FEV1 (L) = Predicted FEV1 (L) * (% predicted / 100).</li>
+            <li>Use recent spirometry values. This tool supports screening, not final diagnosis.</li>
+          </ul>
+        </section>
+      </section>
+
+      <section class="panel history-panel">
+        <h2>Recent Predictions</h2>
+        <p class="muted">Saved locally in your browser for quick comparison.</p>
+        <div class="table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Probability</th>
+                <th>Label</th>
+                <th>FEV1 (L)</th>
+                <th>BMI</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-cure" class="tab-content">
+      <section class="panel info-grid">
+        <article class="info-card">
+          <h2>Is there a complete cure?</h2>
+          <p>
+            Cystic fibrosis currently has no universal complete cure, but outcomes improve strongly with
+            modern treatment, especially CFTR modulator therapies for eligible mutations.
+          </p>
+        </article>
+        <article class="info-card">
+          <h2>Core treatment pillars</h2>
+          <p>Airway clearance, inhaled therapies, targeted antibiotics, enzyme replacement, high-calorie nutrition, and specialist follow-up.</p>
+        </article>
+        <article class="info-card">
+          <h2>Prevention focus</h2>
+          <p>Prevent complications and infections: vaccination, hand hygiene, early treatment, adherence, and routine lung monitoring.</p>
+        </article>
+        <article class="info-card">
+          <h2>Family planning &amp; genetics</h2>
+          <p>Carrier screening and genetic counseling are important for families with known CF history.</p>
+        </article>
+      </section>
+    </section>
+
+    <section id="tab-knowledge" class="tab-content">
+      <section class="panel info-grid">
+        <article class="info-card">
+          <h2>What is CF?</h2>
+          <p>CF is an inherited condition affecting salt-water movement in cells, leading to thick mucus in lungs and digestive system.</p>
+        </article>
+        <article class="info-card">
+          <h2>Common symptoms</h2>
+          <p>Chronic cough, recurrent chest infections, wheezing, poor weight gain, greasy stools, and sinus issues.</p>
+        </article>
+        <article class="info-card">
+          <h2>How diagnosis is done</h2>
+          <p>Sweat chloride test, genetic testing, newborn screening, lung function tests like FEV1, and clinical evaluation.</p>
+        </article>
+        <article class="info-card">
+          <h2>When to seek care urgently</h2>
+          <p>Breathing distress, persistent fever, blood in sputum, dehydration, rapid decline in exercise tolerance.</p>
+        </article>
+      </section>
+    </section>
+
+    <section id="tab-research" class="tab-content">
+      <section class="panel info-grid">
+        <article class="info-card">
+          <h2>United States</h2>
+          <p>Newborn screening and CF center-based management are widely used. Research focuses on early diagnosis, genotype-driven therapy, and outcomes tracking.</p>
+        </article>
+        <article class="info-card">
+          <h2>United Kingdom</h2>
+          <p>Registry-driven care models and national guidance have supported longitudinal CF outcome analysis and treatment optimization.</p>
+        </article>
+        <article class="info-card">
+          <h2>Europe (Multi-country)</h2>
+          <p>Cross-country registries and collaborative studies evaluate survival trends, CFTR modulator impact, and quality-of-care variation.</p>
+        </article>
+        <article class="info-card">
+          <h2>Australia &amp; Canada</h2>
+          <p>Strong CF registry systems and specialist clinics contribute to real-world evidence on disease progression and intervention benefits.</p>
+        </article>
+      </section>
+      <section class="panel">
+        <h2>Prior Research Positioning</h2>
+        <p class="muted">
+          This project contributes by combining: synthetic minority data generation, federated non-IID training, edge-ready inference, and clinical-style decision support UI.
+        </p>
+      </section>
+    </section>
+
+    <section id="tab-edge" class="tab-content">
+      <section class="panel info-grid">
+        <article class="info-card">
+          <h2>Why edge for CF screening?</h2>
+          <p>Low-latency local predictions, reduced dependency on cloud connectivity, and improved privacy posture for sensitive health data.</p>
+        </article>
+        <article class="info-card">
+          <h2>Current readiness</h2>
+          <p>Checkpoint-based local inference, API health checks, browser UI, and feature-consistent preprocessing from training to deployment.</p>
+        </article>
+        <article class="info-card">
+          <h2>Next optimization targets</h2>
+          <p>Model quantization, ONNX/TorchScript export, resource-aware scheduling, and secure model update + rollback strategy.</p>
+        </article>
+        <article class="info-card">
+          <h2>Clinical governance</h2>
+          <p>Maintain explainability notes, threshold calibration, audit logs, and clear “screening support only” safeguards in all deployments.</p>
+        </article>
+      </section>
+      <section class="panel">
+        <h2>Journal-ready Checklist</h2>
+        <div class="nodes-grid">
+          <article class="node-card"><h3>Methodology</h3><p>Data prep, augmentation, federated setup, metrics, ablations.</p></article>
+          <article class="node-card"><h3>Validation</h3><p>Leakage checks, stress tests, holdout and CV reporting.</p></article>
+          <article class="node-card"><h3>Deployment</h3><p>Edge inference workflow and UI for practical use cases.</p></article>
+        </div>
+      </section>
+    </section>
+
+    <section id="tab-nodes" class="tab-content">
+      <section class="panel">
+        <h2>Model Nodes (Small Info)</h2>
+        <p class="muted">Each node is a model input used to estimate CF screening risk.</p>
+        <div class="nodes-grid">
+          <article class="node-card"><h3>Age</h3><p>Context feature for age-specific pattern changes.</p></article>
+          <article class="node-card"><h3>Sex</h3><p>Encodes demographic differences in disease profile.</p></article>
+          <article class="node-card"><h3>Height</h3><p>Used with weight to contextualize body size and BMI.</p></article>
+          <article class="node-card"><h3>Weight</h3><p>Nutritional status marker; relevant in CF progression.</p></article>
+          <article class="node-card"><h3>FEV1</h3><p>Primary lung function node; strongest signal in your experiments.</p></article>
+          <article class="node-card"><h3>BMI</h3><p>Nutritional reserve indicator, linked to respiratory outcomes.</p></article>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

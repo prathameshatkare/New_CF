@@ -1,0 +1,26 @@
+﻿flowchart TD
+    A[Raw Clinical Tables] --> B[Feature Harmonization]
+    B --> C[BMI Engineering and Binary Target]
+    C --> D[Statistical Validation]
+    D --> E[Cleaned Dataset 3025 rows]
+
+    E --> F[Minority-only TVAE Augmentation]
+    F --> F1[Add small Gaussian noise to minority continuous features]
+    F1 --> F2[Train TVAE on CF minority]
+    F2 --> F3[Sample 300 synthetic CF rows]
+    F3 --> F4[KS tests and source-classifier check]
+    F4 --> G[Augmented Dataset 3325 rows]
+
+    G --> H[Global split Train Val Test]
+    H --> I[Standardize features fit on train only]
+    I --> J[Non-IID client simulation Dirichlet alpha 0.6]
+    J --> K[Federated rounds]
+    K --> K1[Sample around 80 percent clients per round]
+    K1 --> K2[Local training with FedProx]
+    K2 --> K3[Weighted FedAvg aggregation]
+    K3 --> K4[Validate AUC and F1 with early stopping]
+
+    K4 --> L[Best checkpoint saved]
+    L --> M[Test metrics Acc Precision Recall F1 ROC-AUC PR-AUC]
+    L --> N[Deployment FastAPI and Web UI]
+    N --> O[Patient feature input to CF risk probability]

@@ -1,0 +1,45 @@
+{
+  "features": [
+    "age",
+    "sex",
+    "height",
+    "weight",
+    "fev1",
+    "BMI"
+  ],
+  "checkpoint_path": "ablation_runs\\all_features.pt",
+  "metrics": {
+    "accuracy": 0.9904,
+    "precision": 0.8064516129032258,
+    "recall": 1.0,
+    "f1": 0.8928571428571429,
+    "roc_auc": 1.0,
+    "pr_auc": 1.0
+  },
+  "config": {
+    "data_path": "augmented_cf_dataset.csv",
+    "rounds": 8,
+    "num_clients": 5,
+    "client_fraction": 0.8,
+    "local_epochs": 2,
+    "batch_size": 128,
+    "lr": 0.0008,
+    "weight_decay": 0.0001,
+    "fedprox_mu": 0.01,
+    "dirichlet_alpha": 0.6,
+    "test_size": 0.2,
+    "val_size": 0.2,
+    "seed": 42,
+    "early_stopping_patience": 10,
+    "checkpoint_path": "ablation_runs\\all_features.pt",
+    "features": [
+      "age",
+      "sex",
+      "height",
+      "weight",
+      "fev1",
+      "BMI"
+    ],
+    "metrics_out": "ablation_runs\\all_features_metrics.json"
+  }
+}

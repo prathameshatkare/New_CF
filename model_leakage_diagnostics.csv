@@ -1,0 +1,17 @@
+dataset,check,value,note
+Augmented,conflicting_duplicate_feature_rows,0.0,Rows with same features but different labels
+Augmented,label_shuffle_roc_auc_mean,0.47259230769230764,Should be close to 0.5
+Augmented,single_feature_auc::BMI,0.9517923076923077,Very high value can indicate strong separability
+Augmented,single_feature_auc::age,0.7813666666666667,Very high value can indicate strong separability
+Augmented,single_feature_auc::fev1,1.0,Very high value can indicate strong separability
+Augmented,single_feature_auc::height,0.6557653846153846,Very high value can indicate strong separability
+Augmented,single_feature_auc::sex,0.47402564102564104,Very high value can indicate strong separability
+Augmented,single_feature_auc::weight,0.8886051282051282,Very high value can indicate strong separability
+Cleaned,conflicting_duplicate_feature_rows,0.0,Rows with same features but different labels
+Cleaned,label_shuffle_roc_auc_mean,0.5192666666666665,Should be close to 0.5
+Cleaned,single_feature_auc::BMI,0.9318000000000002,Very high value can indicate strong separability
+Cleaned,single_feature_auc::age,0.7904,Very high value can indicate strong separability
+Cleaned,single_feature_auc::fev1,1.0,Very high value can indicate strong separability
+Cleaned,single_feature_auc::height,0.6318666666666667,Very high value can indicate strong separability
+Cleaned,single_feature_auc::sex,0.4673333333333334,Very high value can indicate strong separability
+Cleaned,single_feature_auc::weight,0.8606333333333334,Very high value can indicate strong separability

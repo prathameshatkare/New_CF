@@ -1,0 +1,11 @@
+dataset,scenario,accuracy,precision,recall,f1,roc_auc,pr_auc
+Augmented,clean,1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,fev1_shift_minus_10pct,1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,gaussian_noise_2pct,1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,gaussian_noise_5pct,1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,weight_shift_plus_10pct,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,clean,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,fev1_shift_minus_10pct,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,gaussian_noise_2pct,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,gaussian_noise_5pct,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,weight_shift_plus_10pct,1.0,1.0,1.0,1.0,1.0,1.0

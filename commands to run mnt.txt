@@ -1,0 +1,19 @@
+```powershell
+cd c:\Users\ASUS\Desktop\mnt
+
+# 1) Run full project pipeline (train + outputs)
+.\venv\Scripts\python.exe run_project_pipeline.py
+
+# 2) Launch Web UI (FastAPI + frontend)
+.\venv\Scripts\python.exe run_web_ui.py
+```
+
+Open:
+- `http://127.0.0.1:8600/`
+
+Optional (Streamlit UI instead):
+```powershell
+.\venv\Scripts\python.exe -m streamlit run app_ui.py --server.headless true --server.port 8510
+```
+Open:
+- `http://127.0.0.1:8510`

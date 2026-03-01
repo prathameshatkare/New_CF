@@ -1,0 +1,8 @@
+experiment,dropped_features,num_features,accuracy,precision,recall,f1,roc_auc,pr_auc,checkpoint_path,metrics_path
+drop_BMI,BMI,5,0.9968,0.9259259259259259,1.0,0.9615384615384616,1.0,1.0,ablation_runs\drop_BMI.pt,ablation_runs\drop_BMI_metrics.json
+all_features,none,6,0.9904,0.8064516129032258,1.0,0.8928571428571429,1.0,1.0,ablation_runs\all_features.pt,ablation_runs\all_features_metrics.json
+drop_weight,weight,5,0.9872,0.7575757575757576,1.0,0.8620689655172413,1.0,1.0,ablation_runs\drop_weight.pt,ablation_runs\drop_weight_metrics.json
+drop_height,height,5,0.9808,0.6756756756756757,1.0,0.8064516129032258,1.0,1.0,ablation_runs\drop_height.pt,ablation_runs\drop_height_metrics.json
+drop_sex,sex,5,0.9984,1.0,0.96,0.9795918367346939,0.9999333333333333,0.9984615384615385,ablation_runs\drop_sex.pt,ablation_runs\drop_sex_metrics.json
+drop_age,age,5,0.9984,0.9615384615384616,1.0,0.9803921568627451,0.9998666666666667,0.9968615384615386,ablation_runs\drop_age.pt,ablation_runs\drop_age_metrics.json
+drop_fev1,fev1,5,0.88,0.23958333333333334,0.92,0.38016528925619836,0.9487333333333333,0.49700709667964676,ablation_runs\drop_fev1.pt,ablation_runs\drop_fev1_metrics.json

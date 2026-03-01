@@ -1,0 +1,15 @@
+﻿flowchart LR
+    A[Input Features: age sex height weight fev1 BMI] --> B[Linear 6 to 64]
+    B --> C[BatchNorm1d 64]
+    C --> D[ReLU]
+    D --> E[Dropout 0.20]
+    E --> F[Linear 64 to 32]
+    F --> G[ReLU]
+    G --> H[Dropout 0.15]
+    H --> I[Linear 32 to 16]
+    I --> J[ReLU]
+    J --> K[Linear 16 to 1 logit]
+    K --> L[Sigmoid Probability]
+    L --> M{Threshold 0.5}
+    M -->|>=0.5| N[High CF Risk]
+    M -->|<0.5| O[Lower CF Risk]

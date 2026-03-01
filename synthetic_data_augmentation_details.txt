@@ -1,0 +1,51 @@
+﻿Synthetic Data Generation for Rare-Class Augmentation (TVAE): Formal Procedure
+
+1) Problem setup and notation
+Let the cleaned dataset be D = {(x_i, y_i)}_{i=1}^N, where y_i in {0,1} and y_i=1 denotes cystic fibrosis (CF). In this project, N=3025 with class counts N_0=3000 and N_1=25. Each feature vector is x_i = [age, sex, height, weight, fev1, BMI]. The goal is to construct an augmented dataset D_aug that improves minority representation without distorting the majority-class manifold. We therefore synthesize only minority records and keep all majority records real. Define D_1 = {x_i | y_i=1} and D_0 = {x_i | y_i=0}. The target is to generate M=300 synthetic minority rows, giving N_1'=N_1+M=325 and N'=N_0+N_1'=3325.
+
+2) Minority-only preconditioning and anti-memorization noise
+Because |D_1| is very small, direct generative training can overfit and memorize unique rows. To reduce memorization risk, we perturb continuous minority features with low-amplitude Gaussian noise before model fitting. For each minority sample x in D_1 and each continuous feature j in J={age,height,weight,fev1,BMI}, we apply x_j_tilde = x_j + epsilon_j, where epsilon_j ~ N(0, sigma^2) and sigma=0.01 in the implemented pipeline. Sex remains discrete and is not noised. This produces D_1_tilde used for generator training. Intuitively, this adds local support around each rare sample and regularizes latent fitting.
+
+3) TVAE model and learning objective
+A Tabular Variational Autoencoder (TVAE) is trained on D_1_tilde. The encoder q_phi(z|x) maps input x to latent variable z, while decoder p_theta(x|z) reconstructs tabular records. Training optimizes the standard variational objective (ELBO):
+
+L(theta, phi; x) = E_{q_phi(z|x)}[log p_theta(x|z)] - beta * KL(q_phi(z|x) || p(z)).
+
+Here p(z)=N(0,I), KL is Kullback-Leibler divergence, and beta controls regularization strength (library default in this run). The first term is reconstruction likelihood; the second enforces latent smoothness and reduces overfitting. Project settings were epochs=1000, batch_size=16, and enforce_min_max_values=True. The min-max constraint projects generated values into observed feature bounds, which is important for clinical plausibility.
+
+4) Sampling and post-processing constraints
+After convergence, the model samples M=300 rows from the learned decoder distribution. If z^(k) ~ p(z), synthetic rows are x_hat^(k) ~ p_theta(x|z^(k)), k=1..M. Post-processing enforces schema validity: (i) retain required columns in fixed order [age, sex, height, weight, fev1, BMI], (ii) convert sex to binary by sex = clip(round(sex), 0, 1), (iii) assign y=1 to all synthetic rows. The final augmented dataset is
+
+D_aug = D_0 union D_1 union D_syn,
+
+then shuffled with fixed random seed (42) for deterministic downstream splits.
+
+5) Statistical and model-based quality diagnostics
+Two complementary diagnostics are used to evaluate synthetic fidelity. First, feature-wise two-sample Kolmogorov-Smirnov (KS) tests compare real minority vs synthetic minority marginals. For feature f with empirical CDFs F_real,f and F_syn,f, the KS statistic is
+
+D_f = sup_x |F_real,f(x) - F_syn,f(x)|.
+
+Associated p-values are reported per feature; larger p-values generally indicate weaker evidence of distributional mismatch (with known low-power caveats for tiny real minority samples). Second, a classifier two-sample test is run by labeling source s=0 for real minority rows and s=1 for synthetic rows. A RandomForest classifier is trained on this source task. Let Acc_det be detector accuracy on a hold-out split. If Acc_det is near 0.5, synthetic and real rows are hard to distinguish, indicating better realism; much higher values suggest generator artifacts or mode collapse.
+
+6) Algorithmic summary (implementation-level)
+Algorithm 1: Minority-only TVAE augmentation
+Input: cleaned table D, minority label value 1, feature set F, synthetic size M=300.
+Output: D_aug.
+Step 1: Validate schema columns F U {target}; cast target and sex to int.
+Step 2: Partition D into D_1 (target=1) and D_0 (target=0); require |D_1| >= 10.
+Step 3: Create D_1_tilde by adding Gaussian noise N(0,0.01^2) to continuous fields.
+Step 4: Infer table metadata from D_1_tilde.
+Step 5: Train TVAE(metadata, epochs=1000, batch_size=16, enforce_min_max_values=True) on D_1_tilde.
+Step 6: Sample M synthetic rows D_syn from trained TVAE.
+Step 7: Enforce field validity (binary sex), set target=1 for all rows in D_syn.
+Step 8: Compute KS tests for each feature f in F between D_1 and D_syn.
+Step 9: Run source-classification diagnostic (real=0, synthetic=1) and compute Acc_det.
+Step 10: Construct D_aug = concat(D_0, D_1, D_syn); shuffle with random_state=42; save.
+
+7) Quantitative effect in this project
+Before augmentation: N_0=3000, N_1=25, minority prevalence p_1=25/3025=0.00826 (0.83%).
+After augmentation: N_0=3000, N_1'=325, prevalence p_1'=325/3325=0.09774 (9.77%).
+Relative minority amplification factor is 325/25 = 13.0x. This improves effective representation for training and usually reduces degenerate majority-only decision boundaries, while preserving all original records.
+
+8) Methodological rationale and limitations
+Why TVAE: compared with simple oversampling, TVAE can model nonlinear joint dependencies in mixed tabular data and generate diverse minority candidates. Why minority-only: it prevents unnecessary perturbation of the well-sampled non-CF class. Remaining limitations: synthetic data may still encode subtle artifacts, KS is marginal (not fully multivariate), and tiny original minority size limits certainty. For this reason, the pipeline keeps additional downstream checks (leakage diagnostics, stress testing, and ablation) before claiming model robustness.

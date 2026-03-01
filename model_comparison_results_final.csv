@@ -1,0 +1,9 @@
+dataset,model,holdout_accuracy,holdout_precision,holdout_recall,holdout_f1,holdout_roc_auc,holdout_pr_auc
+Augmented,LogReg (balanced),1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,SVM-RBF (balanced),1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,RandomForest (balanced),1.0,1.0,1.0,1.0,1.0,1.0
+Augmented,GradientBoosting,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,LogReg (balanced),1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,SVM-RBF (balanced),1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,GradientBoosting,1.0,1.0,1.0,1.0,1.0,1.0
+Cleaned,RandomForest (balanced),1.0,1.0,1.0,1.0,0.9999999999999999,1.0
