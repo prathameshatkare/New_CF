@@ -1,5 +1,6 @@
 /**
- * CF Edge Screening Console - ML-Themed UI with Enhanced PDF
+ * CF Edge Screening Console - Complete Application
+ * Features: What-If Analysis, Patient Profiles, PDF Export, Analytics, Voice Input & More
  */
 (function () {
   // DOM Elements
@@ -47,30 +48,21 @@
   function setTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(THEME_KEY, theme);
-    if (themeToggle) {
-      themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
-      console.log("Theme set to:", theme);
-    }
+    themeToggle.textContent = theme === "dark" ? "☀️" : "🌙";
   }
   
   function initTheme() {
     const savedTheme = localStorage.getItem(THEME_KEY) || "light";
-    console.log("Initializing theme:", savedTheme);
     setTheme(savedTheme);
   }
   
-  // Initialize theme toggle after DOM is ready
-  if (themeToggle) {
-    themeToggle.addEventListener("click", function() {
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      const newTheme = currentTheme === "dark" ? "light" : "dark";
-      console.log("Toggling from", currentTheme, "to", newTheme);
-      setTheme(newTheme);
-    });
-    initTheme();
-  } else {
-    console.warn("Theme toggle button not found!");
-  }
+  themeToggle.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+  });
+  
+  initTheme();
   
   // ==================== FORM VALIDATION ====================
   function validateField(inputEl, validator) {
@@ -108,21 +100,9 @@
   
   // ==================== TAB NAVIGATION ====================
   function switchTab(tabName) {
-    tabButtons.forEach((btn) => {
-      btn.classList.toggle("active", btn.dataset.tab === tabName);
-    });
-    tabContents.forEach((panel) => {
-      panel.classList.toggle("active", panel.id === `tab-${tabName}`);
-    });
+    tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tabName));
+    tabContents.forEach((panel) => panel.classList.toggle("active", panel.id === `tab-${tabName}`));
   }
-  
-  // Add click event listeners to all tab buttons
-  tabButtons.forEach(button => {
-    button.addEventListener("click", function() {
-      const tabName = this.getAttribute("data-tab");
-      switchTab(tabName);
-    });
-  });
   
   // ==================== FEV1 INPUT HANDLING ====================
   function renderFev1Fields() {
@@ -266,82 +246,171 @@
     saveProfileBtn.addEventListener("click", () => {
       const name = patientNameInput?.value?.trim();
       if (!name) {
-        alert("⚠️ Please enter a patient name");
+        alert("⚠️ Please enter patient name");
         return;
       }
       
-      const patient = {
-        id: editingPatientId || Date.now().toString(),
-        name: name,
+      const patients = loadPatients();
+      const patientData = {
+        id: editingPatientId || `patient_${Date.now()}`,
+        name,
         patientId: patientIdInput?.value?.trim() || "",
         dob: patientDobInput?.value || "",
-        createdAt: editingPatientId ? new Date().toISOString() : new Date().toISOString(),
+        createdAt: editingPatientId ? patients.find(p => p.id === editingPatientId)?.createdAt : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       
-      const patients = loadPatients();
       if (editingPatientId) {
         const idx = patients.findIndex(p => p.id === editingPatientId);
-        if (idx !== -1) patients[idx] = patient;
+        if (idx >= 0) patients[idx] = patientData;
       } else {
-        patients.push(patient);
+        patients.push(patientData);
       }
       
       savePatients(patients);
       renderPatientList();
       
-      patientNameInput.value = "";
-      patientIdInput.value = "";
-      patientDobInput.value = "";
+      // Reset form
+      if (patientNameInput) patientNameInput.value = "";
+      if (patientIdInput) patientIdInput.value = "";
+      if (patientDobInput) patientDobInput.value = "";
       editingPatientId = null;
-      profileFormTitle.textContent = "New Patient Profile";
+      if (profileFormTitle) profileFormTitle.textContent = "New Patient Profile";
+      
       alert("✅ Patient profile saved successfully!");
     });
   }
   
   if (clearProfileBtn) {
     clearProfileBtn.addEventListener("click", () => {
-      patientNameInput.value = "";
-      patientIdInput.value = "";
-      patientDobInput.value = "";
+      if (patientNameInput) patientNameInput.value = "";
+      if (patientIdInput) patientIdInput.value = "";
+      if (patientDobInput) patientDobInput.value = "";
       editingPatientId = null;
-      profileFormTitle.textContent = "New Patient Profile";
+      if (profileFormTitle) profileFormTitle.textContent = "New Patient Profile";
     });
   }
   
-  // ==================== AUTO BMI CALCULATION ====================
-  function calculateBMI() {
-    const h = Number(heightInput?.value || 0) / 100;
-    const w = Number(weightInput?.value || 0);
-    if (h > 0 && w > 0) return w / (h * h);
-    return null;
-  }
-  
-  function updateAutoBMI() {
-    if (!autoBmiEl.checked) return;
-    const bmi = calculateBMI();
-    if (bmi && bmi > 0) {
-      const manualInput = document.getElementById("bmi-manual");
-      if (manualInput) manualInput.value = bmi.toFixed(1);
+  // ==================== PREDICTION HISTORY & CHART ====================
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(HISTORY_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
     }
   }
   
-  [heightInput, weightInput].forEach(el => {
-    el?.addEventListener("input", updateAutoBMI);
-  });
+  function saveHistory(items) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0, 10)));
+  }
   
-  // ==================== HEALTH CHECK ====================
+  function initHistoryChart(history) {
+    const ctx = document.getElementById("history-chart");
+    if (!ctx) return;
+    
+    const reversedHistory = [...history].reverse();
+    
+    const data = {
+      labels: reversedHistory.map(item => item.time),
+      datasets: [{
+        label: "CF Risk Probability",
+        data: reversedHistory.map(item => item.probability),
+        borderColor: "rgb(59, 130, 246)",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: reversedHistory.map(item => item.probability >= 0.5 ? "rgb(239, 68, 68)" : "rgb(16, 185, 129)"),
+        pointBorderColor: "#fff",
+        pointBorderWidth: 2,
+      }]
+    };
+    
+    const config = {
+      type: "line",
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: "index" },
+        plugins: {
+          legend: { display: true, position: "top", labels: { usePointStyle: true, padding: 15, font: { size: 12, weight: "600" } } },
+          tooltip: {
+            backgroundColor: "rgba(15, 23, 42, 0.95)",
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            borderColor: "rgba(59, 130, 246, 0.5)",
+            borderWidth: 1,
+            padding: 12,
+            displayColors: false,
+            callbacks: {
+              label: (context) => {
+                const value = (context.parsed.y * 100).toFixed(1) + "%";
+                const item = reversedHistory[context.dataIndex];
+                return [`Risk: ${value}`, `FEV1: ${item.fev1.toFixed(3)} L`, `BMI: ${item.bmi.toFixed(2)}`];
+              },
+              title: (items) => "Time: " + items[0].label,
+            },
+          },
+        },
+        scales: {
+          y: { min: 0, max: 1, ticks: { format: { style: "percent" }, color: getComputedStyle(document.documentElement).getPropertyValue("--text-light") }, grid: { color: "rgba(59, 130, 246, 0.1)" } },
+          x: { display: false },
+        },
+      },
+    };
+    
+    if (historyChart) historyChart.destroy();
+    historyChart = new Chart(ctx, config);
+  }
+  
+  function renderHistory() {
+    const history = loadHistory();
+    historyTableBody.innerHTML = "";
+    
+    if (!history.length) {
+      historyTableBody.innerHTML = `<tr><td colspan="5" class="muted" style="text-align: center; padding: 30px;">No predictions yet. Start by entering patient data!</td></tr>`;
+      if (historyChart) { historyChart.destroy(); historyChart = null; }
+      return;
+    }
+    
+    history.forEach((item) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${item.time}</td><td>${item.probability.toFixed(3)}</td><td><span class="badge ${item.probability >= 0.5 ? 'badge-danger' : 'badge-success'}">${item.label}</span></td><td>${item.fev1.toFixed(3)}</td><td>${item.bmi.toFixed(2)}</td>`;
+      historyTableBody.appendChild(tr);
+    });
+    
+    initHistoryChart(history);
+  }
+  
+  // ==================== API HEALTH CHECK ====================
   async function checkHealth() {
     try {
       const res = await fetch("/api/health");
       const data = await res.json();
-      if (healthEl) healthEl.textContent = `● Model Ready (${data.model_version})`;
+      healthEl.textContent = "● Model Ready | Features: " + data.features.join(", ");
+      healthEl.style.background = "rgba(255,255,255,0.24)";
     } catch {
-      if (healthEl) healthEl.textContent = "⚠️ API Offline";
+      healthEl.textContent = "API unavailable";
     }
   }
   
+  // ==================== EVENT LISTENERS ====================
+  autoBmiEl?.addEventListener("change", function () {
+    bmiManualWrap?.classList.toggle("hidden", autoBmiEl.checked);
+  });
+  
+  fev1ModeEl?.addEventListener("change", renderFev1Fields);
+  
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
+  
   // ==================== FORM SUBMISSION ====================
-  formEl?.addEventListener("submit", async (e) => {
+  formEl?.addEventListener("submit", async function (e) {
     e.preventDefault();
     
     const age = Number(document.getElementById("age").value);
@@ -577,85 +646,6 @@
       copyResults(result);
     }
   };
-  
-  // ==================== HISTORY MANAGEMENT ====================
-  function loadHistory() {
-    try {
-      const raw = localStorage.getItem(HISTORY_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  }
-  
-  function saveHistory(history) {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  }
-  
-  function renderHistory() {
-    const history = loadHistory();
-    if (!historyTableBody) return;
-    
-    historyTableBody.innerHTML = history.slice(0, 10).map((row, i) => `
-      <tr style="animation: slideInRight 0.4s ease ${i * 0.05}s both;"}>
-        <td>${row.time}</td>
-        <td style="font-weight: 700; color: ${row.probability >= 0.5 ? 'var(--danger)' : 'var(--ok)'}">${(row.probability * 100).toFixed(1)}%</td>
-        <td><span class="badge badge-${row.label.includes('High') ? 'danger' : 'ok'}">${row.label}</span></td>
-        <td>${row.fev1.toFixed(3)}</td>
-        <td>${row.bmi.toFixed(2)}</td>
-      </tr>
-    `).join("");
-    
-    renderChart();
-  }
-  
-  // ==================== CHART.JS INTEGRATION ====================
-  function renderChart() {
-    const ctx = document.getElementById("history-chart");
-    if (!ctx) return;
-    
-    const history = loadHistory().slice(0, 10).reverse();
-    if (historyChart) historyChart.destroy();
-    
-    historyChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: history.map(h => h.time),
-        datasets: [{
-          label: "Risk Probability",
-          data: history.map(h => h.probability * 100),
-          borderColor: "#3b82f6",
-          backgroundColor: "rgba(59, 130, 246, 0.1)",
-          tension: 0.4,
-          fill: true,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          pointBackgroundColor: "#fff",
-          pointBorderColor: "#3b82f6",
-          pointBorderWidth: 2,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true, position: "top" },
-          tooltip: {
-            callbacks: {
-              label: (context) => `Risk: ${context.parsed.y.toFixed(1)}%`
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { callback: (val) => val + "%" }
-          }
-        }
-      }
-    });
-  }
   
   // ==================== INITIALIZATION ====================
   renderFev1Fields();
